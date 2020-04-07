@@ -5,19 +5,45 @@
 #include <dirent.h>
 #include <string.h>
 
-static void do_tree(char *path, int depth);
+#define _GNU_SOURCE
+#include <getopt.h>
+
+#define ERR_TEMPLATE "Usage: %s [-a] [FILE ...]\n"
+
+static struct option longopts[] = {
+  { "a", no_argument, NULL, 'all' },
+  {0,0,0,0},
+};
+
+static void do_tree(char *path, int depth, int show_dotfiles);
 static void ppath(char *path, int depth);
 
 int main(int argc, char const* argv[])
 {
-  int i;
+  int opt;
+  int show_dotfiles;
+
+  while ((opt = getopt_long(argc, argv, "a", longopts, NULL)) != -1) {
+    switch (opt) {
+      case 'a': 
+        show_dotfiles = 1;
+        break;
+      case 'h':
+        fprintf(stdout, ERR_TEMPLATE, argv[0]);
+        exit(0);
+      case '?':
+        fprintf(stderr, ERR_TEMPLATE, argv[0]);
+        exit(1);
+    }
+  }
+
   if (argc < 2) {
-    do_tree(".", 0);
+    do_tree(".", 0, show_dotfiles);
     return 0;
   }
 
-  for(i = 1; i < argc; i++) {
-    do_tree((char *)argv[i], 0);
+  for(int i = 1; i < argc; i++) {
+    do_tree((char *)argv[i], 0, show_dotfiles);
   }
 
   return 0;
@@ -32,7 +58,7 @@ static void ppath(char *path, int depth) {
 }
 
 
-static void do_tree(char *path, int depth) {
+static void do_tree(char *path, int depth, int show_dotfiles) {
   struct stat st;
 
   if (lstat(path, &st) < 0) {
@@ -57,14 +83,20 @@ static void do_tree(char *path, int depth) {
   }
 
   while((entry = readdir(d))) {
-    if (strncmp(entry->d_name, ".", 1) == 0) {
-      continue;
+    if (show_dotfiles == 1) {
+      if (strncmp(entry->d_name, ".", 2) == 0 || strncmp(entry->d_name, "..", 3) == 0) {
+        continue;
+      }
+    } else {
+      if (strncmp(entry->d_name, ".", 1) == 0) {
+        continue;
+      }
     }
     char pathname[1024];
     strcpy(pathname, path);
     strcat(pathname, "/");
     strcat(pathname, entry->d_name);
-    do_tree(pathname, depth+1);
+    do_tree(pathname, depth+1, show_dotfiles);
   }
 
   closedir(d);
