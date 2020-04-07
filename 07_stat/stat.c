@@ -38,12 +38,14 @@ int main(int argc, char const* argv[])
 }
 
 static char* filetype(mode_t mode) {
-  if (S_ISREG(mode)) return "file";
-  if (S_ISDIR(mode)) return "directory";
-  if (S_ISCHR(mode)) return "chardev";
-  if (S_ISBLK(mode)) return "blockdev";
-  if (S_ISFIFO(mode)) return "fifo";
-  if (S_ISLNK(mode)) return "symlink";
-  if (S_ISSOCK(mode)) return "socket";
-  return "unknown";
+  switch (mode & S_IFMT) {
+    case S_IFREG: return "file";
+    case S_IFDIR: return "directory";
+    case S_IFCHR: return "chardev";
+    case S_IFBLK: return "blockdev";
+    case S_IFIFO:  return "fifo";
+    case S_IFLNK: return "symlink";
+    case S_IFSOCK:  return "socket";
+    default: return "unknown";
+  }
 }
