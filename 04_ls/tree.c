@@ -73,31 +73,33 @@ static void do_tree(char *path, int depth, int show_dotfiles) {
     ppath(path, depth);
   }
 
-  DIR  *d;
-  struct dirent *entry;
+  struct dirent **namelist;
 
-  d = opendir(path);
-  if (!d) {
+  int n = scandir(path, &namelist, NULL, alphasort);
+  if (n < 0) {
     perror(path);
     exit(1);
   }
 
-  while((entry = readdir(d)) != NULL) {
+
+  for (int i = 0; i < n; i++) {
+    char * dname = namelist[i]->d_name;
     if (show_dotfiles == 1) {
-      if (strncmp(entry->d_name, ".", 2) == 0 || strncmp(entry->d_name, "..", 3) == 0) {
+      if (strncmp(dname, ".", 2) == 0 || strncmp(dname, "..", 3) == 0) {
         continue;
       }
     } else {
-      if (strncmp(entry->d_name, ".", 1) == 0) {
+      if (strncmp(dname, ".", 1) == 0) {
         continue;
       }
     }
-    char pathname[strlen(path)+strlen(entry->d_name)+2];
+
+    char pathname[strlen(path)+strlen(dname)+2];
     strcpy(pathname, path);
     strcat(pathname, "/");
-    strcat(pathname, entry->d_name);
+    strcat(pathname, dname);
     do_tree(pathname, depth+1, show_dotfiles);
   }
 
-  closedir(d);
+  free(namelist);
 }
