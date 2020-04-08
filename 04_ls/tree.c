@@ -11,7 +11,7 @@
 #define ERR_TEMPLATE "Usage: %s [-a] [FILE ...]\n"
 
 static struct option longopts[] = {
-  { "a", no_argument, NULL, 'all' },
+  { "all", no_argument, NULL, 'a' },
   {0,0,0,0},
 };
 
@@ -82,7 +82,7 @@ static void do_tree(char *path, int depth, int show_dotfiles) {
     exit(1);
   }
 
-  while((entry = readdir(d))) {
+  while((entry = readdir(d)) != NULL) {
     if (show_dotfiles == 1) {
       if (strncmp(entry->d_name, ".", 2) == 0 || strncmp(entry->d_name, "..", 3) == 0) {
         continue;
@@ -92,7 +92,7 @@ static void do_tree(char *path, int depth, int show_dotfiles) {
         continue;
       }
     }
-    char pathname[1024];
+    char pathname[strlen(path)+strlen(entry->d_name)+2];
     strcpy(pathname, path);
     strcat(pathname, "/");
     strcat(pathname, entry->d_name);
