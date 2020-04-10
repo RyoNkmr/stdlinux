@@ -81,7 +81,6 @@ static void do_tree(char *path, int depth, int show_dotfiles) {
     exit(1);
   }
 
-
   for (int i = 0; i < n; i++) {
     char * dname = namelist[i]->d_name;
     if (show_dotfiles == 1) {
