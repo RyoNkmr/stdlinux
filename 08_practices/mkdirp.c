@@ -19,7 +19,7 @@ int main(int argc, char const* argv[])
 }
 
 static void rec_mkdir(const char *path) {
-  if(mkdir(path, 0777) == 0) {
+  if(mkdir(path, 0777) == 0 || errno == EEXIST) {
     return;
   }
 
@@ -32,12 +32,17 @@ static void rec_mkdir(const char *path) {
   if (ptr_trailing_slash != NULL) {
     int len = ptr_trailing_slash - path;
     char parent_path[len+1];
-    stpncpy(parent_path, path, len);
-    parent_path[sizeof(parent_path) - 1] = '\0';
-    printf("%s -> %s: (+%s) %d\n", path, parent_path, ptr_trailing_slash, len);
-    if(strlen(path) == 0) {
+    strlcpy(parent_path, path, len+1);
+
+    if(strlen(parent_path) == 0) {
       return;
     }
+
     rec_mkdir(parent_path);
+  }
+
+  if (mkdir(path, 0777) < 0) {
+    perror(path);
+    exit(1);
   }
 }
