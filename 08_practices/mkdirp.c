@@ -31,12 +31,13 @@ static void rec_mkdir(const char *path) {
   char *ptr_trailing_slash = strrchr(path, '/');
   if (ptr_trailing_slash != NULL) {
     int len = ptr_trailing_slash - path;
-    char parent_path[len+1];
-    strlcpy(parent_path, path, len+1);
-
-    if(strlen(parent_path) == 0) {
+    if(len == 0) {
       return;
     }
+
+    char parent_path[len+1];
+    strncpy(parent_path, path, len);
+    parent_path[len] = '\0';
 
     rec_mkdir(parent_path);
   }
