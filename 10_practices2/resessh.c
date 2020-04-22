@@ -19,7 +19,7 @@ static void read_stdin(void);
 static void print_cwd(int is_fullpath, int brackets);
 static void print_re(void);
 static char* get_cwd(char *dest);
-static int exec(cmd *cmds);
+static int exec(int cmdc, cmd *cmds);
 
 static void bye(void);
 static void cd(char *path);
@@ -104,6 +104,7 @@ static void read_stdin(void) {
     if (ch == '|' || ch == '\n') {
       cmds[cmdc].argv = argv;
       cmds[cmdc].argc = argc;
+      cmdc++;
 
       argv_size = ARGV_SIZE;
       argv = (char **)calloc(argv_size, sizeof(char));
@@ -120,7 +121,7 @@ static void read_stdin(void) {
     }
 
     if (ch == '\n') {
-      exec(cmds);
+      exec(cmdc, cmds);
       break;
     }
 
@@ -155,7 +156,7 @@ static void read_stdin(void) {
   free(chunk);
 }
 
-static int exec(cmd* cmds) {
+static int exec(int cmdc, cmd* cmds) {
   char **argv = cmds[0].argv;
   int argc = cmds[0].argc;
 
